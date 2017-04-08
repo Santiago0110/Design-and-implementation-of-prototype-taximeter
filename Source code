@@ -1,0 +1,208 @@
+#include <16F877A.h>
+#fuses XT,NOWDT,NOPROTECT,NOLVP,PUT,BROWNOUT
+#use delay (clock=4000000)
+
+#Define LCD_RS  PIN_B2
+#Define LCD_E   PIN_B3
+
+#Define LCD_DB4 PIN_B4
+#Define LCD_DB5 PIN_B5
+#Define LCD_DB6 PIN_B6
+#Define LCD_DB7 PIN_B7
+
+#Include <lcd1.c>  
+#Use fast_io(C)
+
+//DECLARACIÓN DE VARIABLES-----------------------------------------
+
+float32 banderazo = 2600;   //Variable inicial
+int8 on_off    	  = PIN_C0; //Botón de encendido y reinicio
+int8 sensor       = PIN_C1; //Botón de incremento
+int8 recargos     = PIN_C2; //Botón de recargos
+int8 cobrar       = PIN_C3; //Botón de detener
+int8 habilitar    = PIN_C4; 
+int8 led          = PIN_C5;
+
+int8 estado1=0;
+int8 estado2=0;
+
+//CONFIGURACIÓN DE PUERTOS------------------------------------------------
+
+void Ini_Puertos(){
+	set_tris_C(0b00001111);  //Puerto C: 4 entradas y 4 salidas
+  output_bit(habilitar,0); //Pin de habilitación de sistema
+	output_bit(led,0);       //Pin de led de habilitación
+	output_C(0x00);
+}
+
+//FUNCIÓN INCREMENTAR-----------------------------------------------------
+
+void incrementar_b(){			
+	if(Input(sensor)==0){     //Si se presiona el botón
+		delay_ms(250);          //Espera de antirrebote
+		if(Input(sensor)==0){ 
+   			banderazo+=60;      //Suma $60 al banderazo
+    }      
+	}
+} 
+
+//FUNCIÓN RECARGOS-------------------------------------------------------
+
+void recargo(){
+
+int8 x=0;   	//Variable para evaluar recargo normal
+int8 aero=0; 	//Variable para evaluar recargo de aeropuerto
+int8 cont1=0;	//Contador las pulsaciones del botón recargo
+int8 aux;      
+
+	while(cont1!=20){ 
+		cont1++;
+		aux=0;
+        delay_ms(200);
+
+		if(Input(recargos)==0 && x==0 && aero==0 && aux==0){ 
+			delay_ms(500);	
+      lcd_putc("\f");     //Limpiala  pantalla
+			lcd_gotoxy(1,1);    //Escribe en Columna 1,  Fila 1 
+			lcd_putc("Recargo");
+			lcd_gotoxy(1,2);    //Escribe en Columna 1,  Fila 2 
+			lcd_putc("$700");
+			x=1;
+			aero=0;
+			aux=1;
+		}
+		if(Input(recargos)==0 && x==1 && aero==0 && aux==0){  
+			delay_ms(500);
+      lcd_putc("\f"); 		    //Limpia la pantalla
+			lcd_gotoxy(1,1);  		  //Escribe en Columna 1,  Fila 1 
+			lcd_putc("Recargo-Aero");
+			lcd_gotoxy(1,2);  		  //Escribe en Columna 1,  Fila 2
+			lcd_putc("$4500");
+			x=0;
+			aero=1;
+			aux=1;					
+		}
+		if(Input(recargos)==0 && x==0 && aero==1 && aux==0){  
+      lcd_putc("\f"); 			      //Limpia la pantalla
+			lcd_gotoxy(1,1);            //Escribe en Columna 1,  Fila 1 
+			lcd_putc("Recargo + aero");
+			lcd_gotoxy(1,2);            //Escribe en Columna 1,  Fila 2 
+			lcd_putc("$5200");
+			delay_ms(1500);
+			x=1;
+			aero=1;
+			cont1=20;	
+		}
+
+	}
+
+		if(x==1 && aero==0){  //Si se presionó una vez
+			banderazo+=700;     //Realiza el recargo normal
+		}
+		if(x==0 && aero==1){  //Si se presionó dos veces
+			banderazo+=4500;    //Realiza el recargo al aeropuerto
+		}
+		if(x==1 && aero==1){  //Si se presionó tres veces
+			banderazo+=5200;    //Realiza el recargo normal + aeropuerto
+		}
+
+		lcd_gotoxy(1,1);  // Columna 1,  Fila 1
+		lcd_putc("Valor + recargo:"); 
+		lcd_gotoxy(11,2); // Columna 11, Fila 2
+ 		lcd_putc("$"); 
+ 		lcd_gotoxy(12,2); // Columna 12, Fila 2
+ 		printf(lcd_putc,"%f",banderazo);	
+		delay_ms(2000);
+       	lcd_putc("\f"); 
+
+}	
+
+//FUNCIÓN COBRAR----------------------------------------------------------
+
+void detener(){        
+	if(Input(cobrar)==0){         //Si se presiona el botón
+		delay_ms(250);              //Espera de antirrebote
+		if(Input(cobrar)==0){
+       		if(banderazo<=4200){  //Si el valor de baderazo es menor que 4200
+    			banderazo=4200;       //Cobra la carrera mínima 
+				  estado1=0;
+       		}else{                //De lo contrario
+            	recargo();        //Llama la función recargo
+				      estado1=0;        //Regresa y pone estado1 en 0
+	   		}				
+		}      
+	}
+}
+
+//INICIO DEL MAIN---------------------------------------------------------
+
+void main () { 
+  
+Ini_Puertos();  //Llama la función que configura los puertos
+
+while(true){
+
+output_bit(habilitar,0);  //Deshabilita el sistema
+output_bit(led,0);
+banderazo=2600;           //Reinicia el banderazo
+
+	if(Input(on_off)==0){ 			 //Si se presiona el botón d
+    	delay_ms(250);     			 //Espera de antirrebote
+  		if(Input(on_off)==0){
+        	output_bit(habilitar,1); //Habilita el sistema
+			    output_bit(led,1);       //Enciende un led
+        	lcd_init();
+
+        	//MENSAJE DE BIENVENIDA-----------------------------------
+			lcd_gotoxy(4,1); 		  //Escribe en Columna 4, Fila 1
+			lcd_putc("BIENVENIDO"); 
+			lcd_gotoxy(3,2); 		  //Escribe en Columna 3, Fila 2
+			lcd_putc("UNI-TAXI S.A"); 
+			delay_ms(1000);           //Espera 1 segundo
+			lcd_putc("\f");           //Limpia la pantalla
+			delay_ms(300);
+        	//--------------------------------------------------------
+
+      estado1=1;		//Pone en 1 las variables
+      estado2=1;      //y entra al while
+    	}
+	}
+
+	while(estado1==1 && estado2==1){
+
+		while(estado1==1){
+	  
+		//INICIO DE CARRERA-------------------------------------------
+	
+		incrementar_b();  //Llama la función que incrementa tarifa
+
+  	lcd_gotoxy(1,1);  //Escribe en Columna 1,  Fila 1
+ 		lcd_putc("Valor actual:"); 
+  	lcd_gotoxy(11,2); //Escribe en Columna 11, Fila 2
+ 		lcd_putc("$"); 
+ 		lcd_gotoxy(12,2); //Escribe en Columna 12, Fila 2
+ 		printf(lcd_putc,"%f",banderazo); 
+		//Muestra el valor inicial del banderazo
+    detener();        //Llama la función detener
+    
+		}
+
+    lcd_gotoxy(1,1);  //Escribe en Columna 1,  Fila 1
+ 		lcd_putc("Valor total:"); 
+  	lcd_gotoxy(11,2); //Escribe en Columna 11, Fila 2
+ 		lcd_putc("$"); 
+ 		lcd_gotoxy(12,2); //Escribe en Columna 12, Fila 2
+ 		printf(lcd_putc,"%f",banderazo);
+
+		//FIN DE CARRERA----------------------------------------------
+	
+		if(Input(on_off)==0){     //Si se presiona el boton de encendido
+   			delay_ms(250);
+  			if(Input(on_off)==0){ //Sale del while y reinicia  
+				      estado1=0;
+            	estado2=0; 
+       	} 
+      }
+	}
+  }
+}
