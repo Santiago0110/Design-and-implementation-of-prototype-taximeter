@@ -30,7 +30,7 @@ int8 estado2=0;
 
 void Ini_Puertos(){
 	set_tris_C(0b00001111);  //Puerto C: 4 entradas y 4 salidas
-  output_bit(habilitar,0); //Pin de habilitación de sistema
+  	output_bit(habilitar,0); //Pin de habilitación de sistema
 	output_bit(led,0);       //Pin de led de habilitación
 	output_C(0x00);
 }
@@ -42,7 +42,7 @@ void incrementar_b(){
 		delay_ms(250);          //Espera de antirrebote
 		if(Input(sensor)==0){ 
    			banderazo+=60;      //Suma $60 al banderazo
-    }      
+   		}      
 	}
 } 
 
@@ -58,11 +58,11 @@ int8 aux;
 	while(cont1!=20){ 
 		cont1++;
 		aux=0;
-        delay_ms(200);
+        	delay_ms(200);
 
 		if(Input(recargos)==0 && x==0 && aero==0 && aux==0){ 
 			delay_ms(500);	
-      lcd_putc("\f");     //Limpiala  pantalla
+     			lcd_putc("\f");     //Limpiala  pantalla
 			lcd_gotoxy(1,1);    //Escribe en Columna 1,  Fila 1 
 			lcd_putc("Recargo");
 			lcd_gotoxy(1,2);    //Escribe en Columna 1,  Fila 2 
@@ -73,7 +73,7 @@ int8 aux;
 		}
 		if(Input(recargos)==0 && x==1 && aero==0 && aux==0){  
 			delay_ms(500);
-      lcd_putc("\f"); 		    //Limpia la pantalla
+      			lcd_putc("\f"); 		  //Limpia la pantalla
 			lcd_gotoxy(1,1);  		  //Escribe en Columna 1,  Fila 1 
 			lcd_putc("Recargo-Aero");
 			lcd_gotoxy(1,2);  		  //Escribe en Columna 1,  Fila 2
@@ -83,7 +83,7 @@ int8 aux;
 			aux=1;					
 		}
 		if(Input(recargos)==0 && x==0 && aero==1 && aux==0){  
-      lcd_putc("\f"); 			      //Limpia la pantalla
+      			lcd_putc("\f"); 	    //Limpia la pantalla
 			lcd_gotoxy(1,1);            //Escribe en Columna 1,  Fila 1 
 			lcd_putc("Recargo + aero");
 			lcd_gotoxy(1,2);            //Escribe en Columna 1,  Fila 2 
@@ -113,7 +113,7 @@ int8 aux;
  		lcd_gotoxy(12,2); // Columna 12, Fila 2
  		printf(lcd_putc,"%f",banderazo);	
 		delay_ms(2000);
-       	lcd_putc("\f"); 
+       		lcd_putc("\f"); 
 
 }	
 
@@ -123,12 +123,12 @@ void detener(){
 	if(Input(cobrar)==0){         //Si se presiona el botón
 		delay_ms(250);              //Espera de antirrebote
 		if(Input(cobrar)==0){
-       		if(banderazo<=4200){  //Si el valor de baderazo es menor que 4200
+       			if(banderazo<=4200){  //Si el valor de baderazo es menor que 4200
     			banderazo=4200;       //Cobra la carrera mínima 
-				  estado1=0;
-       		}else{                //De lo contrario
-            	recargo();        //Llama la función recargo
-				      estado1=0;        //Regresa y pone estado1 en 0
+			estado1=0;
+       			}else{                //De lo contrario
+            			recargo();        //Llama la función recargo
+				estado1=0;        //Regresa y pone estado1 en 0
 	   		}				
 		}      
 	}
@@ -147,11 +147,11 @@ output_bit(led,0);
 banderazo=2600;           //Reinicia el banderazo
 
 	if(Input(on_off)==0){ 			 //Si se presiona el botón d
-    	delay_ms(250);     			 //Espera de antirrebote
+    		delay_ms(250);     			 //Espera de antirrebote
   		if(Input(on_off)==0){
-        	output_bit(habilitar,1); //Habilita el sistema
-			    output_bit(led,1);       //Enciende un led
-        	lcd_init();
+        		output_bit(habilitar,1); //Habilita el sistema
+			output_bit(led,1);       //Enciende un led
+        		lcd_init();
 
         	//MENSAJE DE BIENVENIDA-----------------------------------
 			lcd_gotoxy(4,1); 		  //Escribe en Columna 4, Fila 1
@@ -163,8 +163,8 @@ banderazo=2600;           //Reinicia el banderazo
 			delay_ms(300);
         	//--------------------------------------------------------
 
-      estado1=1;		//Pone en 1 las variables
-      estado2=1;      //y entra al while
+      			estado1=1;	//Pone en 1 las variables
+      			estado2=1;      //y entra al while
     	}
 	}
 
@@ -176,20 +176,20 @@ banderazo=2600;           //Reinicia el banderazo
 	
 		incrementar_b();  //Llama la función que incrementa tarifa
 
-  	lcd_gotoxy(1,1);  //Escribe en Columna 1,  Fila 1
+  		lcd_gotoxy(1,1);  //Escribe en Columna 1,  Fila 1
  		lcd_putc("Valor actual:"); 
-  	lcd_gotoxy(11,2); //Escribe en Columna 11, Fila 2
+  		lcd_gotoxy(11,2); //Escribe en Columna 11, Fila 2
  		lcd_putc("$"); 
  		lcd_gotoxy(12,2); //Escribe en Columna 12, Fila 2
  		printf(lcd_putc,"%f",banderazo); 
 		//Muestra el valor inicial del banderazo
-    detener();        //Llama la función detener
+    		detener();        //Llama la función detener
     
 		}
 
-    lcd_gotoxy(1,1);  //Escribe en Columna 1,  Fila 1
+    		lcd_gotoxy(1,1);  //Escribe en Columna 1,  Fila 1
  		lcd_putc("Valor total:"); 
-  	lcd_gotoxy(11,2); //Escribe en Columna 11, Fila 2
+  		lcd_gotoxy(11,2); //Escribe en Columna 11, Fila 2
  		lcd_putc("$"); 
  		lcd_gotoxy(12,2); //Escribe en Columna 12, Fila 2
  		printf(lcd_putc,"%f",banderazo);
@@ -199,10 +199,10 @@ banderazo=2600;           //Reinicia el banderazo
 		if(Input(on_off)==0){     //Si se presiona el boton de encendido
    			delay_ms(250);
   			if(Input(on_off)==0){ //Sale del while y reinicia  
-				      estado1=0;
-            	estado2=0; 
-       	} 
+				estado1=0;
+            			estado2=0; 
+       			} 
+      		}
+	   }
       }
-	}
-  }
 }
